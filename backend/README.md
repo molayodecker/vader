@@ -16,6 +16,11 @@ Paystack confirmation is only accepted from a trusted server-side verification
 adapter. `verified: true` and `authenticated: true` are *internal assertions*,
 not proof when supplied by an Android app or public API.
 
+`VaderBackend.PaystackVerification` checks the decoded provider verify response
+against the backend-owned order's reference, amount and currency. It has no
+network access or secrets; wiring `GET /transaction/verify/:reference` and
+signed webhook verification to a server HTTP adapter is still required.
+
 `priv/sql/001_vending_orders.sql` supplies persistent order, Paystack settlement,
 cash event, safety telemetry, attempt, and outbox tables. It also supplies
 `queue_dispense(order_uuid, attempt_uuid)` to atomically check settlement and

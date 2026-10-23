@@ -109,8 +109,21 @@ public final class GroceryActivity extends Activity {
         if(next==0)cart.remove(item.slot);else cart.put(item.slot,next);showCart();}
     void choosePayment(int sum){new AlertDialog.Builder(this).setTitle("Payment · "+money(sum))
         .setMessage("SIMULATION ONLY: no card, cash or mobile money will be charged.")
-        .setItems(new String[]{"Paystack — mobile money / card (demo)","Coins — MDB coin changer (demo)","Banknotes — MDB note acceptor (demo)"},(dialog,which)->simulate())
+        .setItems(new String[]{"Paystack — mobile money / card (demo)","Coins — MDB coin changer (demo)","Banknotes — MDB note acceptor (demo)"},(dialog,which)->previewPayment(which,sum))
         .setNegativeButton("Back",null).show();}
+    void previewPayment(int method,int sum){
+        String[] labels={"Paystack","Coin changer","Banknote acceptor"};
+        String explanation=method==0
+            ? "A real checkout will wait for the Vader server to verify the Paystack transaction."
+            : method==1
+                ? "A real checkout will count authenticated MDB coin-credit events and verify any change payout."
+                : "A real checkout will count authenticated MDB banknote-credit events and verify any change payout.";
+        new AlertDialog.Builder(this).setTitle(labels[method]+" · demo")
+            .setMessage("Total: "+money(sum)+"\n\n"+explanation
+                +"\n\nNo money is accepted. No physical dispensing occurs.")
+            .setPositiveButton("Simulate completed payment",(dialog,which)->simulate())
+            .setNegativeButton("Choose another method",(dialog,which)->choosePayment(sum)).show();
+    }
     void simulate(){int quantity=0;
         for(Product item:products){int n=cart.getOrDefault(item.slot,0);
             for(int k=0;k<n;k++){simulator.start(UUID.randomUUID().toString(),item.slot);
