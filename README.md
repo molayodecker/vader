@@ -23,8 +23,10 @@ Open this folder in Android Studio. Install an Android SDK and JDK 17, then buil
 With a configured Android SDK and Gradle:
 
 ```bash
-gradle :app:assembleDebug
+gradle :app:testDebugUnitTest :app:assembleDebug
 ```
+
+Unit tests cover payment gating, duplicate order IDs, single dispense attempts, serial timeouts, and active-order concurrency. This is an in-memory prototype; a production ledger must persist attempts across device restarts.
 
 Android compile SDK: API 35. Minimum supported API: 24 (provisional; confirm from device Settings).
 
