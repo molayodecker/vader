@@ -1,6 +1,7 @@
 # Vader backend: order lifecycle domain
 
-This is a **pure Elixir domain module**, not yet a networked Phoenix API or payment integration.
+This is an **Elixir domain prototype plus a PostgreSQL schema**, not yet a
+networked Phoenix API, Paystack integration, or machine driver.
 
 It models the sequence `awaiting_payment → paid → dispensing → complete`, with `needs_review` for uncertain hardware outcomes and `cancelled` only before payment.
 
@@ -8,7 +9,30 @@ The `verified: true` payment field is an internal trusted-adapter assertion, **n
 
 The machine safety fields are also trusted-adapter inputs. The backend cannot independently certify food safety through a client request. The real refrigeration controller must remain independent.
 
-`authorize_dispense/2` only creates a command identity. Later, a PostgreSQL transaction must atomically persist an attempt and an outbox command before hardware dispatch; delivery acknowledgments alone cannot mark fulfillment complete.
+`VaderBackend.Tender` explicitly models **Paystack**, **MDB coins**, and **MDB
+banknotes**. Coins and notes accumulate as cash credit. Underpayment never
+authorizes dispensing; overpayment requires confirmed physical change payout.
+Paystack confirmation is only accepted from a trusted server-side verification
+adapter. `verified: true` and `authenticated: true` are *internal assertions*,
+not proof when supplied by an Android app or public API.
+
+`priv/sql/001_vending_orders.sql` supplies persistent order, Paystack settlement,
+cash event, safety telemetry, attempt, and outbox tables. It also supplies
+`queue_dispense(order_uuid, attempt_uuid)` to atomically check settlement and
+fresh safety telemetry, create **one** attempt, and enqueue **one** command.
+The queue is inert: there is no hardware bridge or outbox dispatcher yet.
+
+Apply to a disposable local PostgreSQL database:
+
+```bash
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f priv/sql/001_vending_orders.sql
+```
+
+Before production: restrict DB privileges; verify Paystack via its secret-key
+server endpoint and authenticate webhook signatures; implement a real MDB232
+bridge with durable event IDs, payout verification, refunds and escrow handling;
+make outbox dispatch ambiguous-result-safe; validate the refrigeration and
+delivery sensors. Never retry a physical vend after an uncertain delivery.
 
 Run tests with:
 

@@ -109,7 +109,7 @@ public final class GroceryActivity extends Activity {
         if(next==0)cart.remove(item.slot);else cart.put(item.slot,next);showCart();}
     void choosePayment(int sum){new AlertDialog.Builder(this).setTitle("Payment · "+money(sum))
         .setMessage("SIMULATION ONLY: no card, cash or mobile money will be charged.")
-        .setItems(new String[]{"Mobile money (demo)","Card (demo)","Cash (demo)"},(dialog,which)->simulate())
+        .setItems(new String[]{"Paystack — mobile money / card (demo)","Coins — MDB coin changer (demo)","Banknotes — MDB note acceptor (demo)"},(dialog,which)->simulate())
         .setNegativeButton("Back",null).show();}
     void simulate(){int quantity=0;
         for(Product item:products){int n=cart.getOrDefault(item.slot,0);

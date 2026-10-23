@@ -63,3 +63,32 @@ jobs:
 
       - name: Run domain tests
         run: mix test --warnings-as-errors
+
+  postgres:
+    name: PostgreSQL payment and outbox tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: vader_test
+          POSTGRES_DB: vader_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d vader_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: vader_test
+      PGDATABASE: vader_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply schema
+        run: psql -v ON_ERROR_STOP=1 -f backend/priv/sql/001_vending_orders.sql
+      - name: Exercise payment and outbox constraints
+        run: psql -v ON_ERROR_STOP=1 -f backend/test/sql/001_vending_orders_test.sql
