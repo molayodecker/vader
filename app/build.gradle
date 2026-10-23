@@ -1,0 +1,18 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'com.molayo.vendingkiosk'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.molayo.vendingkiosk'
+        minSdk 24
+        targetSdk 28 // Provisional for legacy Android device; revisit before distribution.
+        versionCode 1
+        versionName '0.2.0-demo'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
