@@ -58,6 +58,8 @@ jobs:
         with:
           otp-version: '27.1'
           elixir-version: '1.17.3'
+          install-hex: false
+          install-rebar: false
 
       - name: Run domain tests
         run: mix test --warnings-as-errors
