@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vader · Fleet Console</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script type="module" src="app.mjs"></script>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">V</span><span>VADER<small>FLEET CONSOLE</small></span></div>
+      <div class="nav-label">WORKSPACE</div>
+      <nav aria-label="Dashboard sections">
+        <button class="nav active" data-page="overview">◫ <span>Overview</span></button>
+        <button class="nav" data-page="inventory">▦ <span>Inventory</span></button>
+        <button class="nav" data-page="catalog">▤ <span>Product catalog</span></button>
+        <button class="nav" data-page="machines">▣ <span>Machines</span></button>
+      </nav>
+      <div class="sidebar-bottom"><div class="demo-indicator"></div><div><strong>Demo workspace</strong><small>Local data only · No live sales</small></div></div>
+    </aside>
+    <main class="main">
+      <header class="topbar"><span>Operations <span class="chevron">/</span> <strong id="breadcrumb">Overview</strong></span><span class="top-actions"><span class="offline-dot"></span> Simulation mode <span class="avatar">MD</span></span></header>
+      <div class="content">
+        <div class="page-heading"><div><p class="eyebrow">VENDING OPERATIONS</p><h1 id="page-title">Good morning, Molayo <span>✳</span></h1><p id="page-subtitle">A clear view of your vending fleet, stock, and what needs attention.</p></div><span class="date-tag">● &nbsp;Prototype workspace</span></div>
+        <section id="view" aria-live="polite"></section>
+        <footer>Vader Console · Preview data stored in this browser · Live hardware, payments, and API not connected</footer>
+      </div>
+    </main>
+  </div>
+  <div id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

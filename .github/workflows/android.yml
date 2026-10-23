@@ -96,3 +96,16 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f backend/priv/sql/002_catalog_inventory.sql
       - name: Exercise inventory reservations and cancellation
         run: psql -v ON_ERROR_STOP=1 -f backend/test/sql/002_catalog_inventory_test.sql
+
+  dashboard:
+    name: Dashboard model tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate JavaScript modules
+        run: node --check dashboard/app.mjs
+      - name: Run dashboard unit tests
+        run: node dashboard/model.test.mjs
