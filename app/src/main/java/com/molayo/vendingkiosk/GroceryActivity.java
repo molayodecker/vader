@@ -29,12 +29,14 @@ public final class GroceryActivity extends Activity {
         new Product("C1","Protein bar","Snacks","🍫",1400,6,0xFFF8EFD8),
         new Product("C2","Sparkling water","Drinks","🥤",900,5,0xFFE2F5EB));
     final Map<String,Integer> cart=new LinkedHashMap<>();
-    final VendController simulator=new VendController((slot,orderId)->true, orderId->true);
+    VendController simulator;
     LinearLayout body,footer;
     String filter="All";
 
     @Override public void onCreate(Bundle state){
         super.onCreate(state);
+        simulator = new VendController((slot,orderId)->true, orderId->true,
+            new PreferencesAttemptJournal(this));
         getWindow().setStatusBarColor(GREEN);getWindow().setNavigationBarColor(GREEN);
         LinearLayout root=vertical();root.setBackgroundColor(BG);
         ScrollView scroll=new ScrollView(this);body=vertical();scroll.addView(body);

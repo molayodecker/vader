@@ -2,6 +2,8 @@ package com.molayo.vendingkiosk;
 
 import org.junit.Test;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.HashSet;
+import java.util.Set;
 import static org.junit.Assert.*;
 
 public final class VendControllerTest {
@@ -60,5 +62,45 @@ public final class VendControllerTest {
         VendController controller = new VendController((slot, id) -> true, id -> true);
         assertThrows(IllegalArgumentException.class, () -> controller.start("", "A1"));
         assertThrows(IllegalArgumentException.class, () -> controller.start("order-9", null));
+    }
+
+    @Test public void restartCannotRepeatPreviouslyAttemptedVend() {
+        Set<String> durableIds = new HashSet<>();
+        VendController.AttemptJournal sharedJournal = new VendController.AttemptJournal() {
+            @Override public boolean wasAttempted(String id) { return durableIds.contains(id); }
+            @Override public boolean markAttempted(String id) { return durableIds.add(id); }
+        };
+        AtomicInteger physicalWrites = new AtomicInteger();
+        VendController first = new VendController((slot,id) -> { physicalWrites.incrementAndGet(); return false; }, id -> true, sharedJournal);
+        first.start("stable-order-id", "A1");
+        assertEquals(VendController.Status.FAILED, first.vendIfPaid());
+
+        VendController afterRestart = new VendController((slot,id) -> { physicalWrites.incrementAndGet(); return true; }, id -> true, sharedJournal);
+        assertThrows(IllegalArgumentException.class, () -> afterRestart.start("stable-order-id", "A1"));
+        assertEquals(1, physicalWrites.get());
+    }
+
+    @Test public void failedJournalWriteBlocksDispensing() {
+        AtomicInteger physicalWrites = new AtomicInteger();
+        VendController.AttemptJournal storageFailure = new VendController.AttemptJournal() {
+            @Override public boolean wasAttempted(String id) { return false; }
+            @Override public boolean markAttempted(String id) { throw new IllegalStateException("disk full"); }
+        };
+        VendController controller = new VendController((slot,id) -> { physicalWrites.incrementAndGet(); return true; }, id -> true, storageFailure);
+        controller.start("order-disk-error", "C2");
+        assertEquals(VendController.Status.FAILED, controller.vendIfPaid());
+        assertEquals(0, physicalWrites.get());
+    }
+
+    @Test public void duplicateJournalRecordBlocksDispensing() {
+        AtomicInteger physicalWrites = new AtomicInteger();
+        VendController.AttemptJournal duplicate = new VendController.AttemptJournal() {
+            @Override public boolean wasAttempted(String id) { return false; }
+            @Override public boolean markAttempted(String id) { return false; }
+        };
+        VendController controller = new VendController((slot,id) -> { physicalWrites.incrementAndGet(); return true; }, id -> true, duplicate);
+        controller.start("order-concurrent", "B2");
+        assertEquals(VendController.Status.FAILED, controller.vendIfPaid());
+        assertEquals(0, physicalWrites.get());
     }
 }

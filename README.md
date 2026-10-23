@@ -26,7 +26,7 @@ With a configured Android SDK and Gradle:
 gradle :app:testDebugUnitTest :app:assembleDebug
 ```
 
-Unit tests cover payment gating, duplicate order IDs, single dispense attempts, serial timeouts, and active-order concurrency. This is an in-memory prototype; a production ledger must persist attempts across device restarts.
+Unit tests cover payment gating, duplicate order IDs, single dispense attempts, serial timeouts, and active-order concurrency. The demo app now saves attempted order IDs synchronously in private Android preferences before simulated dispensing. A production ledger must also record payment, order and delivery states transactionally and reconcile uncertain outcomes across devices and the backend.
 
 Android compile SDK: API 35. Minimum supported API: 24 (provisional; confirm from device Settings).
 
