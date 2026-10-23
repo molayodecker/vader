@@ -27,10 +27,19 @@ cash event, safety telemetry, attempt, and outbox tables. It also supplies
 fresh safety telemetry, create **one** attempt, and enqueue **one** command.
 The queue is inert: there is no hardware bridge or outbox dispatcher yet.
 
+`priv/sql/002_catalog_inventory.sql` adds product records, machine-specific
+slot assignments, operator-entered stock, capacities, and machine heartbeats.
+`reserve_order_inventory(order_uuid)` checks price and inventory, locks the
+selected slots, deducts stock, and marks the order reserved atomically. The
+`cancel_unpaid_reserved_order(order_uuid)` path restores stock only when no
+payment events have been accepted. Never invoke these SQL functions from an
+untrusted Android client; use backend-only credentials and authorization.
+
 Apply to a disposable local PostgreSQL database:
 
 ```bash
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f priv/sql/001_vending_orders.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f priv/sql/002_catalog_inventory.sql
 ```
 
 Before production: restrict DB privileges; verify Paystack via its secret-key
