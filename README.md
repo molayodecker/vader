@@ -38,6 +38,10 @@ Android compile SDK: API 35. Minimum supported API: 24 (provisional; confirm fro
 - Product data and stock are demo-only and reset when the app restarts.
 - `NOURISH` is a provisional product name. Emoji are placeholders for licensed product photography.
 
+## Backend groundwork
+
+`backend/` contains a pure Elixir order/payment/dispensing state machine with ExUnit tests. It is **not** a running Phoenix API and has no database or payment-provider credentials. It establishes the domain rules before we add PostgreSQL, provider webhooks and command dispatch.
+
 ## Milestones
 
 1. **Now:** catalog, simulated payment, exactly-once vend request, audit/status feedback.
