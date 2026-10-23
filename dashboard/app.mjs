@@ -2,6 +2,7 @@ import {SEED, money, availability, safeLoad, refillSlot, updatePrice, toggleSlot
 
 const STORE_KEY='vader-ops-preview-v1';
 let state=safeLoad(localStorage.getItem(STORE_KEY));
+let connected=false;
 let page='overview';
 let selectedMachine=state.machines[0]?.id;
 let search='';
@@ -17,6 +18,8 @@ function toast(message){const el=$('toast');el.textContent=message;el.classList.
 function setPage(next){page=next;search='';document.querySelectorAll('.nav').forEach(btn=>btn.classList.toggle('active',btn.dataset.page===page));render();}
 
 function render(){
+  $('mode-label').textContent=connected?'● PostgreSQL · read only':'● Prototype workspace';
+  $('connect-api').textContent=connected?'Disconnect API':'Connect local API';
   const names={overview:'Overview',inventory:'Inventory',catalog:'Product catalog',machines:'Machines'};
   $('breadcrumb').textContent=names[page];
   $('page-title').innerHTML=page==='overview'?'Good morning, Molayo <span>✳</span>':safe(names[page]);
@@ -25,6 +28,7 @@ function render(){
     catalog:'Maintain your product prices and assortment.',
     machines:'View your machines and the state of their last reported telemetry.'}[page];
   $('view').innerHTML=({overview:renderOverview,inventory:renderInventory,catalog:renderCatalog,machines:renderMachines}[page])();
+  if(connected) $('view').insertAdjacentHTML('afterbegin','<div class="note warning">PostgreSQL catalog preview · READ ONLY. Physical machine telemetry and safety are not verified.</div>');
 }
 
 function renderOverview(){
@@ -66,6 +70,7 @@ document.addEventListener('click',event=>{
   const pageButton=event.target.closest('[data-page], [data-page-link]');
   if(pageButton){setPage(pageButton.dataset.page||pageButton.dataset.pageLink);return;}
   const button=event.target.closest('[data-action]');if(!button)return;
+  if(connected){toast('Database mode is read only.');return;}
   try{
     const action=button.dataset.action;
     if(action==='toggle'){state=toggleSlot(state,button.dataset.machine,button.dataset.slot);toast('Demo shelf status updated.');}
@@ -95,3 +100,22 @@ document.addEventListener('input',event=>{if(event.target.id==='search'){
 }});
 
 render();
+
+$('connect-api').addEventListener('click',async()=>{
+  if(connected){connected=false;document.body.classList.remove('api-connected');state=safeLoad(localStorage.getItem(STORE_KEY));selectedMachine=state.machines[0]?.id;render();return;}
+  const token=prompt('Enter your local operator token (not saved):');if(!token)return;
+  try{
+    const response=await fetch('/api/snapshot',{headers:{Authorization:'Bearer '+token},cache:'no-store'});
+    if(!response.ok)throw Error('API rejected request ('+response.status+')');
+    const data=await response.json();
+    if(data.source!=='postgres'||!Array.isArray(data.slots)||!Array.isArray(data.products)||!Array.isArray(data.machines))throw Error('Invalid API response');
+    const ids=new Set([...data.machines.map(m=>m.id),...data.slots.map(s=>s.machine_id)]);
+    const incoming={
+      machines:[...ids].map(id=>({id,name:'Machine '+id,location:'Registered device',status:'unverified',temperature:null,lastSeen:null})),
+      products:data.products.map(p=>({id:p.id,name:p.name,category:'Catalog',image:'▧',price:Number(p.price_minor)})),
+      slots:data.slots.map(s=>({machineId:s.machine_id,slot:s.slot_code,productId:s.product_id,stock:Number(s.quantity),capacity:Number(s.capacity),enabled:s.enabled}))
+    };
+    if(incoming.slots.some(s=>!Number.isSafeInteger(s.stock)||!Number.isSafeInteger(s.capacity)||s.stock<0||s.capacity<1||s.stock>s.capacity))throw Error('Invalid inventory received');
+    state=incoming;connected=true;document.body.classList.add('api-connected');selectedMachine=state.machines[0]?.id;render();toast('Connected: read-only PostgreSQL data.');
+  }catch(error){toast(error.message);}
+});

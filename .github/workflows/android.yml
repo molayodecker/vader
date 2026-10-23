@@ -106,6 +106,6 @@ jobs:
         with:
           node-version: '22'
       - name: Validate JavaScript modules
-        run: node --check dashboard/app.mjs
+        run: node --check dashboard/app.mjs && node --check dashboard/api/server.mjs && node --check dashboard/api/routes.mjs
       - name: Run dashboard unit tests
-        run: node dashboard/model.test.mjs
+        run: node dashboard/model.test.mjs && node dashboard/api/routes.test.mjs

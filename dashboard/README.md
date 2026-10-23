@@ -38,3 +38,24 @@ stored in integer pesewas. The real device `M19265359` is **unverified**;
 - Expose payment and dispense information read-only with appropriate PII limits.
 - Never trust dashboard-supplied inventory, sensor data, or payment status to
   authorize physical vending without backend verification.
+
+## Optional local read-only PostgreSQL API
+
+Apply both database migrations, then create a separate SELECT-only Postgres
+user with access to catalog_products, machine_slots, and machine_heartbeats.
+Run with Node 22+ and a local PostgreSQL database:
+
+```bash
+cd dashboard
+npm install
+export DATABASE_URL='postgresql://vader_dashboard:REPLACE@127.0.0.1:5432/vader_dev'
+export VADER_OPERATOR_TOKEN='REPLACE_WITH_RANDOM_32_PLUS_CHARACTER_TOKEN'
+npm start
+```
+
+Open http://127.0.0.1:8080 and click **Connect local API**. This token is
+used only for the request and never saved by the dashboard. All database-backed
+controls are read-only until a proper audited operator write API is built.
+The server binds to localhost, not the public network. Do not deploy this
+development access scheme to production without TLS, user sessions, authorization,
+audit logs, and rate limiting.

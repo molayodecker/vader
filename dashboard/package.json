@@ -1,0 +1,17 @@
+{
+  "name": "vader-operator-console",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node api/server.mjs",
+    "test": "node model.test.mjs && node api/routes.test.mjs",
+    "check": "node --check app.mjs && node --check api/server.mjs"
+  },
+  "dependencies": {
+    "pg": "8.13.1"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
