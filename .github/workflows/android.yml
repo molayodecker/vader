@@ -96,6 +96,10 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f backend/priv/sql/002_catalog_inventory.sql
       - name: Exercise inventory reservations and cancellation
         run: psql -v ON_ERROR_STOP=1 -f backend/test/sql/002_catalog_inventory_test.sql
+      - name: Apply operator audit migration
+        run: psql -v ON_ERROR_STOP=1 -f backend/priv/sql/003_operator_inventory_audit.sql
+      - name: Test operator inventory audits
+        run: psql -v ON_ERROR_STOP=1 -f backend/test/sql/003_operator_inventory_audit_test.sql
 
   dashboard:
     name: Dashboard model tests
