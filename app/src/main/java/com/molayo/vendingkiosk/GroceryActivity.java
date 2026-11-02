@@ -35,7 +35,7 @@ public final class GroceryActivity extends Activity {
 
     @Override public void onCreate(Bundle state){
         super.onCreate(state);
-        simulator = new VendController((slot,orderId)->true, orderId->true,
+        simulator = new VendController(new SimulatedMachineHardware().asDispenser(), orderId->true,
             new PreferencesAttemptJournal(this));
         getWindow().setStatusBarColor(GREEN);getWindow().setNavigationBarColor(GREEN);
         LinearLayout root=vertical();root.setBackgroundColor(BG);
