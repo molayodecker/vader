@@ -43,7 +43,7 @@ jobs:
           retention-days: 14
 
   backend:
-    name: Elixir order lifecycle tests
+    name: Phoenix API and domain tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
     defaults:
@@ -58,10 +58,12 @@ jobs:
         with:
           otp-version: '27.1'
           elixir-version: '1.17.3'
-          install-hex: false
-          install-rebar: false
+          install-hex: true
+          install-rebar: true
 
-      - name: Run domain tests
+      - name: Fetch Phoenix dependencies
+        run: mix deps.get
+      - name: Run API and domain tests
         run: mix test --warnings-as-errors
 
   postgres:
@@ -104,6 +106,10 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f backend/priv/sql/004_operator_machine_permissions.sql
       - name: Test machine-scoped access and revocation
         run: psql -v ON_ERROR_STOP=1 -f backend/test/sql/004_operator_machine_permissions_test.sql
+      - name: Apply machine registry
+        run: psql -v ON_ERROR_STOP=1 -f backend/priv/sql/005_machine_registry.sql
+      - name: Verify Zhongda profile
+        run: psql -v ON_ERROR_STOP=1 -f backend/test/sql/005_machine_registry_test.sql
 
   dashboard:
     name: Dashboard model tests
