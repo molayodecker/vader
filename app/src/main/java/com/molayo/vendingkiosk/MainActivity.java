@@ -13,8 +13,9 @@ import java.util.UUID;
 
 public final class MainActivity extends Activity {
     private TextView feedback;
+    private final SimulatedMachineHardware hardware = new SimulatedMachineHardware();
     private final VendController controller = new VendController(
-        (slot, orderId) -> true, // Simulated dispenser, never touches hardware.
+        hardware.asDispenser(), // Simulation only; never touches hardware.
         orderId -> true           // Simulated payment verification, never transfers funds.
     );
 

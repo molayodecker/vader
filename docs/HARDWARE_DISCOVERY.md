@@ -6,6 +6,20 @@ board is visible. We do **not** know the firmware protocol, serial baud rates,
 motor board revision, or temperature sensor wiring. Empty "control board
 version" and "MDB version" fields in the cloud dashboard are *not* versions.
 
+Zhongda Cloud identifies machine `M19265359` (number `19265359`) as an Android
+screen vending device, with upper-software version `3.1.90`, a reported goods
+shelf amount of 100, and `3线单反馈电机` (3-wire single-feedback motors). These are
+cloud-side observations, **not** verified physical specifications. The device
+was shown offline with a `-39.00°C` reading, which must not be treated as valid
+cold-chain evidence. `ZhongdaMachineProfile` records only these observations.
+
+`MachineHardware` is the future hardware boundary. `SimulatedMachineHardware`
+implements it without opening ports or sending frames; the existing
+`VendController` uses its boolean adapter. A timeout, disconnection, or other
+uncertain result fails closed. The simulator's local duplicate-ID set is only
+an additional guard; the persistent attempt journal remains mandatory. Do not
+enable live vending based on these classes or the vendor's cloud controls.
+
 ## Ask the on-site operator for
 
 1. Photos of the full machine and its manufacturer/rating plate.

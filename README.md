@@ -12,7 +12,13 @@ Android replacement prototype for the photographed six-row spiral vending machin
 
 ## Safety boundary
 
-The application uses `SimulatedDispenser` only. It **never opens a serial/USB port**, charges a card, accepts cash, or switches a compressor. The sample environment is explicitly marked `DEMO`.
+The application uses `SimulatedMachineHardware` only. It **never opens a serial/USB port**, charges a card, accepts cash, or switches a compressor. The sample environment is explicitly marked `DEMO`.
+
+The read-only `ZhongdaMachineProfile` records vendor-cloud observations for
+machine `19265359` (Android upper software `3.1.90`, 3-wire single-feedback
+motors, reported shelf amount 100). Control-board and MDB versions remain
+unknown. `MachineHardware` separates simulated delivery feedback from future
+hardware adapters; a timeout is never interpreted as successful delivery.
 
 Do not replace or disable the vendor app until the device configuration, dispensing controller, cold-chain safeguards and rollback path are validated on the physical machine.
 
