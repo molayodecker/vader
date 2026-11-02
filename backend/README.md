@@ -1,7 +1,43 @@
 # Vader backend: order lifecycle domain
 
-This is an **Elixir domain prototype plus a PostgreSQL schema**, not yet a
-networked Phoenix API, Paystack integration, or machine driver.
+This is now a **Phoenix JSON API wrapping the existing Elixir domain modules
+and PostgreSQL schema**. It exposes read-only fleet endpoints. It does not yet
+implement Paystack settlement, a machine driver, or an outbox dispatcher.
+
+## Phoenix API
+
+Run migrations 001 through 005, in numeric order, on your own PostgreSQL
+database. Migration 005 records the observed Zhongda profile for M19265359
+without inventing unknown control-board or MDB versions.
+
+Use Elixir 1.16+ and PostgreSQL. In development:
+
+```bash
+cd backend
+mix deps.get
+export DATABASE_URL='postgresql://USER:YOUR_PASSWORD@localhost:5432/vader'
+export VADER_OPERATOR_TOKEN='REPLACE_WITH_A_RANDOM_32_PLUS_CHARACTER_SECRET'
+export SECRET_KEY_BASE='REPLACE_WITH_A_RANDOM_64_PLUS_CHARACTER_SECRET'
+mix phx.server
+```
+
+The following endpoints require `Authorization: Bearer <VADER_OPERATOR_TOKEN>`:
+
+- `GET /api/v1/snapshot` — machines, products, slots, and recent orders
+- `GET /api/v1/machines` — registered devices and recent heartbeat status
+- `GET /api/v1/machines/19265359/inventory` — slot inventory
+- `GET /api/v1/orders` — last 50 order summaries
+
+Invalid or missing tokens return 401; database failure returns 503.
+All endpoints are read-only; none accept client-supplied payment assertions,
+motor commands, temperature safety overrides, or cash events.
+
+Set `PHOENIX_API_URL` and `VADER_OPERATOR_TOKEN` **server-side** in the
+Next.js Vader Cloud deployment. Its `/api/vader/snapshot` route forwards the
+request to Phoenix without exposing the bearer token to the browser.
+Until those values and a reachable Phoenix deployment exist, the UI remains
+in demo mode. For production, use TLS, user sessions and machine-scoped roles;
+the single operator token is an interim development boundary.
 
 It models the sequence `awaiting_payment → paid → dispensing → complete`, with `needs_review` for uncertain hardware outcomes and `cancelled` only before payment.
 
